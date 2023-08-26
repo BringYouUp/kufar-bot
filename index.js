@@ -40,6 +40,7 @@ const handleKufarData = (data, key) => {
 		const domData = dom.window.document.querySelectorAll(CLASSNAMES.main)
 		if (!domData.length || !domData) {
 			sendMeMessage(`${ERROR_ZERO}`)
+			return
 		}
 
 		const domDataIndex = domData.length >= 30 ?  domData.length % 30 : 0
@@ -59,6 +60,7 @@ const handleKufarData = (data, key) => {
 			cached[key] = messageData.description
 		}
 	} catch (e) {
+		debugger
 		sendMeMessage({ message: e.message || e })
 		// clearInterval(interval)
 	}
@@ -69,7 +71,7 @@ const getKufarDataByPath = async path => {
 		.then(data => data.text())
 		.then(r => r)
 		.catch(e => {
-			sendMeMessage(e)
+			sendMeMessage({ message: `STOPPED - ${e.message || e}` })
 			clearInterval(interval)
 	})
 }

@@ -30,4 +30,3 @@ npm start
 
 [create]: <https://core.telegram.org/bots#how-do-i-create-a-bot>
 [Kufar.by]: <https://www.kufar.by/>
-
