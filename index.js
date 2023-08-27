@@ -2,96 +2,143 @@ import fetch from "node-fetch"
 import { JSDOM  } from "jsdom";
 import TelegramBot from "node-telegram-bot-api"
 import dotenv from "dotenv"
+import mongoose from 'mongoose';
+import { MongoClient, ServerApiVersion } from "mongodb";
+import Offer from "./schemes/offer.js"
 
 import {
+	logger,
 	getData,
-	generateOptions,
-	generateMessage,
+	findObject,
+	generateData,
+	getLastIndex,
+	sendMeMessage,
 	getFormattedData,
-	getLocaleStringTime
+	getStartDataIndex,
+	getKufarDataByPath,
+	getLocaleStringTime,
+	sendMeMessageWithImage
 } from "./utils.js"
 
 import {
 	MS,
+	ERRORS,
+	MESSAGES,
+	FOR_RATIO,
 	CLASSNAMES,
-	PATH_ROOMS,
 	PATH_FLATS,
-	ERROR_ZERO,
-	EMPTY_MESSAGE,
-	CACHE_KEY_ROOM,
-	CACHE_KEY_FLAT,
+	KEY_BY_CHECHED,
 	INTERVAL_DELAY_S, 
-	DEFAULT_CACHE_SCHEMA
+	RESULTS_PER_PAGE,
 } from "./consts.js"
 
 dotenv.config()
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const MY_CHAT_ID = process.env.MY_CHAT_ID
+const MONGO_DB_URL = process.env.MONGO_DB_URL
+
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-let cached = DEFAULT_CACHE_SCHEMA
 let interval = null
+let savedOffers = []
 
-const handleKufarData = (data, key) => {
+const sendMeMessageWrap = ({ message, options, data = {} }) => {
+	if (!data.image) {
+		sendMeMessage({
+			bot,
+			message,
+			options,
+			chatId: MY_CHAT_ID
+		})
+	} else {
+		sendMeMessageWithImage({
+			bot,
+			image: data.image,
+			caption: message,
+			options,
+			chatId: MY_CHAT_ID
+		})
+	}
+}
+
+const handleKufarData = data => {
 	try {
 		const dom = new JSDOM(data)
 
 		const domData = dom.window.document.querySelectorAll(CLASSNAMES.main)
 		if (!domData.length || !domData) {
-			sendMeMessage(`${ERROR_ZERO}`)
+			logger(ERRORS.zero)
 			return
 		}
 
-		const domDataIndex = domData.length >= 30 ?  domData.length % 30 : 0
-		const domContent = domData[domDataIndex]
-		const messageData = getData(domContent)
+		const startIndex = getStartDataIndex({ domData })
+		const { lastIndex, initialSavedIsEmpty } = getLastIndex({ domData, savedOffers })
 
-		if (cached[key]) {
-			if (cached[key] !== messageData.description && messageData.description) {
-				const formattedData = getFormattedData(messageData)
-				const message = generateMessage({data: formattedData })
-				const options = generateOptions({data: formattedData })
-				sendMeMessage({ message, options })
-
-				cached[key] = messageData.description
+		for (let i = startIndex; i < lastIndex; i++) {
+			if (!initialSavedIsEmpty) {
+				if (i > startIndex + FOR_RATIO) {
+					break
+				}
 			}
-		} else {
-			cached[key] = messageData.description
+
+			const domContent = domData[i]
+			const messageData = getData(domContent)
+			const savedTheSame = findObject(savedOffers, KEY_BY_CHECHED, messageData[KEY_BY_CHECHED])
+			const isAlreadySavedTheSame = Boolean(savedTheSame)
+
+			if (isAlreadySavedTheSame) {
+				break
+			} else {
+				const formattedData = getFormattedData(messageData)
+				const { message, options } = generateData({ data: formattedData })
+				sendMeMessageWrap({ message, options, data: formattedData })
+				try {
+					const offer = new Offer({ ...formattedData })
+					offer.save()
+					savedOffers.push(offer)
+				} catch (e) {
+					throw new Error(`${ERRORS.saveOffer}. ${e.message}`)
+				}
+			}
 		}
 	} catch (e) {
-		debugger
-		sendMeMessage({ message: e.message || e })
-		// clearInterval(interval)
+		// debugger
+		sendMeMessageWrap({ message: e.message || e })
+		if (interval) {
+			clearInterval(interval)
+		}
 	}
 }
 
-const getKufarDataByPath = async path => {
-	return fetch(path)
-		.then(data => data.text())
-		.then(r => r)
+const check = () => {
+	logger(`${MESSAGES.check} ${getLocaleStringTime()}`)
+	getKufarDataByPath(PATH_FLATS)
+		.then(data => handleKufarData(data))
 		.catch(e => {
-			sendMeMessage({ message: `STOPPED - ${e.message || e}` })
+			sendMeMessageWrap({ message: `STOPPED - ${e.message || e}` })
 			clearInterval(interval)
 	})
 }
 
-function sendMeMessage ({ message, options = {} }) {
-	const messageToSend = message || EMPTY_MESSAGE
-	
-	bot.sendMessage(MY_CHAT_ID, messageToSend, options);
-}
-
-
-function check () {
-	console.log(`→ check`, getLocaleStringTime())
-	getKufarDataByPath(PATH_ROOMS).then(data => handleKufarData(data, CACHE_KEY_ROOM))
-	getKufarDataByPath(PATH_FLATS).then(data => handleKufarData(data, CACHE_KEY_FLAT))
-}
-
-function start() {
+const start = () => {
 	check()
 	interval = setInterval(() => check(), INTERVAL_DELAY_S * MS)
 }
 
-start()
+async function main() {
+  await mongoose.connect(MONGO_DB_URL);
+}
+
+main()
+	.then(() => Offer.find())
+	.then((offersData) => {
+		if (Array.isArray(offersData) && offersData.length > 0) {
+			savedOffers = offersData
+		}
+		logger(MESSAGES.dbConnected)
+		start()
+	})
+	.catch(e => {
+		sendMeMessageWrap({ message: `${ERRORS.initMongo}. ${e.message}` })
+	});

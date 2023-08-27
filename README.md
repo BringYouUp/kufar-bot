@@ -7,12 +7,17 @@ There is a simple program for monitoring offers for renting apartments and rooms
 > How to [create] Telegram bot
 <br/>
 
+## Create FREE MongoDB cluster
+> How to [create](google.com) MongoDB cluster and get url to connect
+<br/>
+
 ## Create an .env file
-> Create an `.env` file and write `BOT_TOKEN` and  `MY_CHAT_ID` variables there:
+> Create an `.env` file and write `BOT_TOKEN`, `MY_CHAT_ID` and `MONGO_DB_URL` variables there:
 
 ```sh
 BOT_TOKEN={YOUR_BOT_TOKEN}
 MY_CHAT_ID={YOUR_MY_CHAT_ID}
+MONGO_DB_URL={YOUR_MONGO_DB_URL}
 ```
 <br/>
 

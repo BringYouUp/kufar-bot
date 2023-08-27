@@ -1,23 +1,28 @@
-export const CACHE_KEY_ROOM = "room"
-export const CACHE_KEY_FLAT = "flat"
-
-export const DEFAULT_CACHE_SCHEMA = {
-	[CACHE_KEY_ROOM]: null,
-	[CACHE_KEY_FLAT]: null
-}
-
 export const CLASSNAMES = {
 	main: '.styles_wrapper__Q06m9',
 	priceBYN: '.styles_price__byr__lLSfd',
 	priceUSD: '.styles_price__usd__HpXMa',
 	parameters: '.styles_parameters__7zKlL',
 	address: '.styles_address__l6Qe_',
-	descriptoin: '.styles_body__r33c8',
+	description: '.styles_body__r33c8',
+	highlighted: '.styles_content--highlighted__tU0RI',
+	image: '.swiper-wrapper .styles_image__7aRPM'
 }
 
-export const PATH_ROOMS = "https://re.kufar.by/l/brest/snyat/komnatu-dolgosrochno"
+export const MESSAGES = {
+	dbConnected: "DB IS SUCCESSFULLY CONNECTED",
+	check: "→ check:"
+}
+
+export const ERRORS = {
+	zero: 'NOT FOUND any result',
+	saveOffer: 'ERROR WHILE SAVING. Error while saving an instance of the offer in the DB',
+	initMongo: 'ERROR WHILE INIT MONGO',
+}
+
 export const PATH_FLATS = "https://re.kufar.by/l/brest/snyat/kvartiru-dolgosrochno"
-export const ERROR_ZERO = "NOT FOUND"
 export const INTERVAL_DELAY_S = 1
 export const MS = 60000
-export const EMPTY_MESSAGE = "EMPTY MESSAGE"
+export const RESULTS_PER_PAGE = 30
+export const FOR_RATIO = 10
+export const KEY_BY_CHECHED = "description"
