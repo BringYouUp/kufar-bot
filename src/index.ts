@@ -1,17 +1,17 @@
-import dotenv from "dotenv"
-
-import { logger } from "@/services/logger.ts";
-import { db } from "@/services/db.ts";
+import dotenv from "dotenv";
 import { checker } from "@/services/checker.ts";
+import { db } from "@/services/db.ts";
+import { logger } from "@/services/logger.ts";
+import { catchError } from "./utils.ts";
 
-dotenv.config()
+dotenv.config();
 
 db.init()
 	.then(() => {
-		checker.start()
+		checker.start();
 	})
-	.catch((error: any) => {
-		logger.error(error);
+	.catch((error: unknown) => {
+		catchError(error);
 		process.exit(1);
 	});
 

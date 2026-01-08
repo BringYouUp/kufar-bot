@@ -1,8 +1,6 @@
 class OffersService {
 	private static instance: OffersService | null = null;
-	private offers: Types.Offer[] = []
-
-	constructor() { }
+	private offers: Types.Offer[] = [];
 
 	static getInstance(): OffersService {
 		if (!OffersService.instance) {
@@ -12,16 +10,16 @@ class OffersService {
 	}
 
 	setOffers(offers: Types.Offer[]) {
-		this.offers = offers
+		this.offers = offers;
 	}
 
 	getOffers() {
-		return this.offers
+		return this.offers;
 	}
 
 	pushOffer(offer: Types.Offer) {
-		this.offers.push(offer)
+		this.offers.push(offer);
 	}
 }
 
-export const offers = OffersService.getInstance()
+export const offers = OffersService.getInstance();

@@ -3,29 +3,32 @@
 There is a simple program for monitoring offers for renting apartments and rooms on the [Kufar.by]
 <hr/>
 
-## Create your own Telegram bot
-> How to [create] Telegram bot
-<br/>
+## Start project
 
-## Create an .env file
-> Create an `.env`:
+- [Create] Telegram bot
+- Create an `.env`:
 
 ```sh
 MONGO_DB_URL=...
 TELEGRAM_BOT_TOKEN=...
+CHECK_INTERVAL_MS=...
+
+# Chat id with bot (check method registerBaseHandlers in src/services/bot.ts)
 CHAT_ID=...
+
+# Url with list (example: https://re.kufar.by/l/minsk/snyat/kvartiru)
 KUFAR_URL=...
-INTERVAL_DELAY_MS=...
+
+# Between 0 and 30
 MAX_RENTAL_SAVED=...
-
 ```
-<br/>
 
-## Start project
+- Start:
+
 ```sh
 make build-no-cache
 make up
 ```
 
-[create]: <https://core.telegram.org/bots#how-do-i-create-a-bot>
+[Create]: <https://core.telegram.org/bots#how-do-i-create-a-bot>
 [Kufar.by]: <https://www.kufar.by/>

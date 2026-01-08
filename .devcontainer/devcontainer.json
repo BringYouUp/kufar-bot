@@ -11,7 +11,10 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"mhutchie.git-graph"
+				"biomejs.biome",
+				"mhutchie.git-graph",
+				"streetsidesoftware.code-spell-checker",
+				"streetsidesoftware.code-spell-checker-russian"
 			]
 		}
 	}
