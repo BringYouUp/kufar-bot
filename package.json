@@ -1,26 +1,28 @@
 {
-  "name": "kufar-bot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "debug": "node --inspect-brk index",
-    "dev": "nodemon index",
-    "start": "node index"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "dotenv": "^16.3.1",
-    "jsdom": "^22.1.0",
-    "nodemon": "^3.0.1"
-  },
-  "dependencies": {
-    "mongodb": "^5.8.1",
-    "mongoose": "^7.4.5",
-    "node-fetch": "^3.3.2",
-    "node-telegram-bot-api": "^0.61.0"
-  }
+    "name": "kufar-bot",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js"
+    },
+    "node": "20.19.0",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/jsdom": "^27.0.0",
+        "@types/node-telegram-bot-api": "^0.64.13",
+        "dotenv": "^16.3.1",
+        "jsdom": "^22.1.0",
+        "nodemon": "^3.0.1",
+        "tsx": "^4.21.0"
+    },
+    "dependencies": {
+        "mongoose": "^7.4.5",
+        "node-telegram-bot-api": "^0.61.0"
+    }
 }

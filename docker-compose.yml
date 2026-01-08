@@ -1,0 +1,27 @@
+services:
+  kufar-bot:
+    container_name: kufar-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
+      - node_modules:/node_modules
+    depends_on:
+      - kufar-mongo
+    env_file:
+      - .env
+    restart: unless-stopped
+  kufar-mongo:
+    image: mongo:8
+    container_name: kufar-mongo
+    ports:
+      - 27018:27017
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+volumes:
+  mongo_data: {}
+  node_modules: {}

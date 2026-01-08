@@ -1,0 +1,8 @@
+services:
+  kufar-bot:
+    volumes:
+      - ./:/app
+      - node_modules:/node_modules
+    command: /bin/sh -c "while sleep 1000; do :; done"
+volumes:
+  node_modules: {}

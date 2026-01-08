@@ -1,37 +1,50 @@
-import fetch from "node-fetch"
-
-import { FOR_RATIO, CLASSNAMES } from "./consts.js"
-
-export const logger = message => {
-	console.log(message)
-}
+import TelegramBot from "node-telegram-bot-api"
+import { CLASSNAMES } from "@/consts.ts"
+import { MAX_RENTAL_SAVED } from "@/config/env.ts"
 
 export const getLocaleStringTime = () => {
 	return new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "medium" })
 }
 
-export const getData = node => {
+export const findObject = <T extends Record<string, any>,>(objects: T[], key: keyof T, value: unknown) => {
+	if (!Array.isArray(objects) || objects.length === 0) return
+
+	return objects.find(object => key in object && object[key] === value)
+}
+
+export const getData = (node: Element): Types.Data => {
 	const nodePriceBYN = node.querySelector(CLASSNAMES.priceBYN)
 	const nodePriceUSD = node.querySelector(CLASSNAMES.priceUSD)
 	const nodeParameters = node.querySelector(CLASSNAMES.parameters)
 	const nodeAddress = node.querySelector(CLASSNAMES.address)
 	const nodeDescription = node.querySelector(CLASSNAMES.description)
-	const nodeImage = node.querySelector(CLASSNAMES.image)
+	const nodeImages = node.querySelectorAll(CLASSNAMES.image)
 
 	const contentPriceBYN = nodePriceBYN?.textContent || ""
 	const contentPriceUSD = nodePriceUSD?.textContent || ""
 	const contentParameters = nodeParameters?.textContent || ""
 	const contentAddress = nodeAddress?.textContent || ""
 	const contentDescription = nodeDescription?.textContent || ""
-	const contentLink = node?.href || ""
-	let contentImage = null
+	const contentLink = (node as any).href || ""
+	const imageUrls: Types.Data['images'] = []
 
-	if (/https:\/\/rms\.kufar\.by.+?\"/g.test(nodeImage?.innerHTML || "")) {
-		contentImage = nodeImage.innerHTML
-			.match(/https:\/\/rms\.kufar\.by.+?\"/g)[0]
-			.replace("\"", "")
+	if (nodeImages.length > 0) {
+		for (let nodeImage of nodeImages) {
+			if (nodeImage && /https:\/\/rms\.kufar\.by.+?\"/g.test(nodeImage?.innerHTML || "")) {
+				const imageUrl = nodeImage.innerHTML
+					.match(/https:\/\/rms\.kufar\.by.+?\"/g)?.[0]
+					.replace("\"", "") || ""
+
+				if (imageUrl) {
+					imageUrls.push(imageUrl)
+				}
+			}
+
+			if (imageUrls.length >= 10) {
+				break
+			}
+		}
 	}
-
 
 	return {
 		priceBYN: contentPriceBYN || "",
@@ -40,24 +53,24 @@ export const getData = node => {
 		address: contentAddress || "",
 		description: contentDescription || "",
 		link: contentLink || "",
-		image: contentImage || ""
+		images: imageUrls,
 	}
 }
 
-export const getFormattedData = data => {
+export const getFormattedData = ({ data }: { data: Types.Data }) => {
 	let newPriceBYN = data.priceBYN
 	let newPriceUSD = data.priceUSD
 
 	if (/\d+(\d|\s)+\d/g.test(newPriceBYN)) {
 		newPriceBYN = newPriceBYN
-			.match(/\d+(\d|\s)+\d/g)[0]
-			.replace(" ", "")
+			.match(/\d+(\d|\s)+\d/g)?.[0]
+			.replace(" ", "") || ""
 	}
 
 	if (/\d+(\d|\.)*\d?/gm.test(newPriceUSD)) {
 		newPriceUSD = newPriceUSD
-			.match(/\d+(\d|\.)*\d?/gm)[0]
-			.replace(" ", "")
+			.match(/\d+(\d|\.)*\d?/gm)?.[0]
+			.replace(" ", "") || ""
 	}
 
 	return {
@@ -67,43 +80,44 @@ export const getFormattedData = data => {
 	}
 }
 
-export const generateMessage = ({ data }) => {
+export const generateMessage = ({ data }: { data: Types.Data }) => {
 	const {
-		link,
 		address,
 		priceBYN,
 		priceUSD,
 		parameters,
-		description
+		description,
+		link,
 	} = data
 
 	return (
-`
-<i>price:</i> <b>${priceBYN} / ${priceUSD}</b>
+		`
+💰 <b>${priceBYN} / ${priceUSD}</b>
 
-<i>${parameters}</i>
-<i>${address}</i>
+<i>⚙️ ${parameters}</i>
+<i>📍 ${address}</i>
 
 ${description}
+
+<i>🔗 <a href="${link}">Ссылка</a></i>
 `
 	)
 }
 
-
-export const generateOptions = ({ data }) => {
+export const generateOptions = ({ data }: { data: Types.Data }): TelegramBot.SendPhotoOptions => {
 	const { link } = data
 
 	return {
 		parse_mode: 'HTML',
-		reply_markup: JSON.stringify({
+		reply_markup: {
 			inline_keyboard: [
 				[{ text: "Link", url: link }]
 			]
-    })
+		}
 	}
 }
 
-export const generateData = ({ data }) => {
+export const generateData = ({ data }: { data: Types.Data }) => {
 	const message = generateMessage({ data })
 	const options = generateOptions({ data })
 
@@ -113,32 +127,7 @@ export const generateData = ({ data }) => {
 	}
 }
 
-export const sendMeMessage = ({ chatId, bot, message, options = {} }) => {
-	const messageToSend = message || EMPTY_MESSAGE
-	
-	bot.sendMessage(chatId, messageToSend, options);
-}
-
-export const sendMeMessageWithImage = ({ chatId, bot, caption, options = {}, image }) => {
-	bot.sendPhoto(chatId, image, {
-		...options,
-		caption
-	});
-}
-
-export const getKufarDataByPath = async path => {
-	return fetch(path)
-		.then(data => data.text())
-		.then(r => r)
-}
-
-export const findObject = (objects, key, value, options) => {
-	if (!Array.isArray(objects) || objects.length === 0) return
-
-	return objects.find(object => key in object && object[key] === value)
-}
-
-export const getStartDataIndex = ({ domData }) => {
+export const getStartDataIndex = ({ domData }: { domData: NodeListOf<Element> }) => {
 	let startIndex = 0
 	for (let i = 0; i < domData.length; i++) {
 		const node = domData[i]
@@ -153,23 +142,23 @@ export const getStartDataIndex = ({ domData }) => {
 	return startIndex
 }
 
-export const getLastIndex = ({ domData, savedOffers }) => {
+export const getLastIndex = ({ domData, savedOffers }: { domData: NodeListOf<Element>, savedOffers: Types.Offer[] }) => {
 	let lastIndex = 0
 	let initialSavedIsEmpty = false
 
 	if (savedOffers.length) {
 		lastIndex = domData.length
 	} else {
-		if (domData.length > lastIndex + FOR_RATIO) {
-			lastIndex += FOR_RATIO
+		if (domData.length > lastIndex + MAX_RENTAL_SAVED) {
+			lastIndex += MAX_RENTAL_SAVED
 		} else {
 			lastIndex = domData.length
 		}
-		
+
 		initialSavedIsEmpty = true
 	}
 
-	return  {
+	return {
 		lastIndex,
 		initialSavedIsEmpty
 	}

@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-const offer = new Schema({
+const offer = new Schema<Types.Offer>({
 	priceBYN: String,
 	priceUSD: String,
 	parameters: String,
@@ -8,7 +8,9 @@ const offer = new Schema({
 	description: String,
 	link: String,
 	dateTime: String,
-	image: String
+	images: { type: [String], default: [] },
+}, {
+	timestamps: true
 })
 
 export default model("Offer", offer)
