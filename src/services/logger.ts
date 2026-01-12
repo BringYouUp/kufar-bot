@@ -1,4 +1,5 @@
 import { type InspectOptions, inspect } from "node:util";
+import { getLocaleStringTime } from "@/utils.ts";
 
 type Method = "log" | "success" | "error" | "warn";
 
@@ -19,6 +20,10 @@ class LoggerService {
 		warn: "⚠️",
 	};
 
+	private getTime() {
+		return getLocaleStringTime();
+	}
+
 	private handleParameters(params: Parameters<(typeof console)["log"]>) {
 		return params.map((x) =>
 			typeof x === "object" && x !== null ? this.pretty(x) : x,
@@ -26,19 +31,31 @@ class LoggerService {
 	}
 
 	log(...data: Parameters<(typeof console)["log"]>) {
-		console.log(`${this.dic.log} `, ...this.handleParameters(data));
+		console.log(
+			`${this.dic.log} [${this.getTime()}] -`,
+			...this.handleParameters(data),
+		);
 	}
 
 	success(...data: Parameters<(typeof console)["log"]>) {
-		console.log(`${this.dic.success}`, ...this.handleParameters(data));
+		console.log(
+			`${this.dic.success} [${this.getTime()}] -`,
+			...this.handleParameters(data),
+		);
 	}
 
 	error(...data: Parameters<(typeof console)["error"]>) {
-		console.error(`${this.dic.error}`, ...this.handleParameters(data));
+		console.error(
+			`${this.dic.error} [${this.getTime()}] -`,
+			...this.handleParameters(data),
+		);
 	}
 
 	warn(...data: Parameters<(typeof console)["warn"]>) {
-		console.log(`${this.dic.warn} `, ...this.handleParameters(data));
+		console.log(
+			`${this.dic.warn} [${this.getTime()}] -`,
+			...this.handleParameters(data),
+		);
 	}
 
 	getText<T extends Method>(method: T, ...data: unknown[]) {

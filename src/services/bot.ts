@@ -2,7 +2,8 @@ import TelegramBot from "node-telegram-bot-api";
 import { CHAT_ID, TELEGRAM_BOT_TOKEN } from "@/config/env.ts";
 import { IMAGES } from "@/consts.ts";
 import { logger } from "@/services/logger.ts";
-import { catchError } from "@/utils.ts";
+import { catchError, getEscaped } from "@/utils.ts";
+import { imageCache } from "./image-cache.ts";
 
 class TelegramBotService {
 	private static instance: TelegramBotService | null = null;
@@ -25,20 +26,20 @@ class TelegramBotService {
 	}
 
 	private registerBaseHandlers() {
-		this.bot.on("polling_error", (err) => {
-			logger.error("polling_error:", err.message);
+		this.bot.on("polling_error", (error: unknown) => {
+			logger.error("polling_error:", (error as Error).message || error);
 		});
 
-		this.bot.on("message", async (e) => {
-			const json = JSON.stringify(e, null, 2);
-			const escaped = json
-				.replaceAll("&", "&amp;")
-				.replaceAll("<", "&lt;")
-				.replaceAll(">", "&gt;");
+		this.bot.on("message", async (event) => {
+			const json = JSON.stringify(event, null, 2);
 
-			await this.sendMessage(CHAT_ID, `<pre><code>${escaped}</code></pre>`, {
-				parse_mode: "HTML",
-			});
+			await this.sendMessage(
+				CHAT_ID,
+				`<pre><code>${getEscaped(json)}</code></pre>`,
+				{
+					parse_mode: "HTML",
+				},
+			);
 		});
 	}
 
@@ -49,6 +50,7 @@ class TelegramBotService {
 			await this.bot.sendMessage(...params);
 		} catch (error: unknown) {
 			catchError(error);
+			throw error;
 		}
 	}
 
@@ -59,6 +61,7 @@ class TelegramBotService {
 			await this.bot.sendMediaGroup(...params);
 		} catch (error: unknown) {
 			catchError(error);
+			throw error;
 		}
 	}
 
@@ -67,12 +70,23 @@ class TelegramBotService {
 		photos: string[],
 		options: Parameters<(typeof this.bot)["sendMediaGroup"]>[2] = {},
 	) {
+		const preparedImages = [];
+
+		if (photos.length) {
+			for (const photo of photos) {
+				const localUrl = await imageCache.downloadToCache(photo);
+				preparedImages.push(localUrl);
+			}
+		} else {
+			preparedImages.push(IMAGES.empty);
+		}
+
 		await this.sendMediaGroup(
 			CHAT_ID,
-			(photos.length ? photos : [IMAGES.empty]).map((photo) => ({
+			preparedImages.map((photo, index) => ({
 				media: photo,
 				type: "photo",
-				caption: message,
+				caption: index === 0 ? message : undefined,
 				parse_mode: "HTML",
 			})),
 			options,

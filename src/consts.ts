@@ -5,7 +5,6 @@ export const CLASSNAMES = {
 	parameters: ".styles_parameters__7zKlL",
 	address: ".styles_address__l6Qe_",
 	description: ".styles_body__r33c8",
-	highlighted: ".styles_content--highlighted__tU0RI",
 	image: ".swiper-wrapper .styles_image__7aRPM",
 } as const;
 
@@ -24,7 +23,5 @@ export const ERRORS = {
 export const IMAGES = {
 	error:
 		"https://images.steamusercontent.com/ugc/16701418788574187284/E76C377E05BED9BB0EAF6581CB5D8CC650832A90/?imw=5000&amp;imh=5000&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false",
-	empty: "https://rayyankarim.com/wp-content/uploads/placeholder.jpeg",
+	empty: "https://placehold.jp/150x150.png",
 };
-
-export const KEY_BY_CHECKED = "description" as const;

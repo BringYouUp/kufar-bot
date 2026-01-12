@@ -4,7 +4,7 @@ import { dom } from "@/services/dom.ts";
 import { interval } from "@/services/interval.ts";
 import { logger } from "@/services/logger.ts";
 import { request } from "@/services/request.ts";
-import { getLocaleStringTime } from "@/utils.ts";
+import { catchError, getLocaleStringTime } from "@/utils.ts";
 
 class CheckerService {
 	private static instance: CheckerService | null = null;
@@ -24,15 +24,18 @@ class CheckerService {
 			.getKufarDataByPath()
 			.then((html) => dom.handleKufarData(html))
 			.catch((error) => {
+				catchError(error);
 				bot.sendMeMessage(logger.getText("error", error.message || error), [
 					IMAGES.error,
 				]);
-			});
+			})
+			.finally(() => {
+				interval.checkWithInterval(() => this.check())
+			})
 	}
 
 	start() {
 		this.check();
-		interval.setInterval(() => this.check());
 	}
 }
 

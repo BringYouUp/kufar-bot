@@ -1,25 +1,28 @@
+import Offer from "@/schemes/offer.ts";
+import { logger } from "./logger.ts";
+
 class OffersService {
-	private static instance: OffersService | null = null;
-	private offers: Types.Offer[] = [];
+	async saveOffer(data: Types.Offer) {
+		const offer = new Offer(data);
 
-	static getInstance(): OffersService {
-		if (!OffersService.instance) {
-			OffersService.instance = new OffersService();
-		}
-		return OffersService.instance;
+		return await offer.save();
 	}
 
-	setOffers(offers: Types.Offer[]) {
-		this.offers = offers;
+	async findOneOffer(link: string) {
+		return await Offer.findOne({ link });
 	}
 
-	getOffers() {
-		return this.offers;
-	}
+	async updateOne(_id: string, data: Types.Data) {
+		const updated = await Offer.updateOne(
+			{
+				_id,
+			},
+			data,
+		);
 
-	pushOffer(offer: Types.Offer) {
-		this.offers.push(offer);
+		// logger.success("Updated with _id", _id)
+		return updated;
 	}
 }
 
-export const offers = OffersService.getInstance();
+export const offers = new OffersService();

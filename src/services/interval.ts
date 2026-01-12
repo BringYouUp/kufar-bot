@@ -1,7 +1,7 @@
 import { CHECK_INTERVAL_MS } from "@/config/env.ts";
 
 class IntervalService {
-	private id: ReturnType<typeof setInterval> | null = null;
+	private id: ReturnType<typeof setTimeout> | null = null;
 
 	private static instance: IntervalService | null = null;
 
@@ -14,14 +14,16 @@ class IntervalService {
 		return IntervalService.instance;
 	}
 
-	setInterval(cb: () => void) {
-		this.id = setInterval(() => cb(), CHECK_INTERVAL_MS);
+	clearId() {
+		if (this.id) {
+			clearTimeout(this.id);
+		}
 	}
 
-	clearInterval() {
-		if (this.id) {
-			clearInterval(this.id);
-		}
+	checkWithInterval(cb: () => unknown) {
+		this.clearId()
+
+		this.id = setTimeout(() => cb(), CHECK_INTERVAL_MS)
 	}
 }
 

@@ -8,8 +8,7 @@ const offer = new Schema<Types.Offer>(
 		address: String,
 		description: String,
 		link: String,
-		dateTime: String,
-		images: { type: [String], default: [] },
+		photos: { type: [String], default: [] },
 	},
 	{
 		timestamps: true,
