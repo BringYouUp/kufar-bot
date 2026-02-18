@@ -23,9 +23,9 @@ class CheckerService {
 		request
 			.getKufarDataByPath()
 			.then((html) => dom.handleKufarData(html))
-			.catch((error) => {
+			.catch(async (error) => {
 				catchError(error);
-				bot.sendMeMessage(logger.getText("error", error.message || error), [
+				await bot.sendMeMessage(logger.getText("error", error.message || error), [
 					IMAGES.error,
 				]);
 			})

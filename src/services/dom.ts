@@ -39,7 +39,7 @@ class DomService {
 				});
 
 				try {
-					bot.sendMeMessage(message, messageData.photos, options)
+					await bot.sendMeMessage(message, messageData.photos, options)
 					logger.success("Sent -", messageData.address, messageData.link);
 
 					if (!savedTheSame) {
@@ -61,7 +61,7 @@ class DomService {
 			await imageCache.clearCache();
 		} catch (error: unknown) {
 			catchError(error);
-			bot.sendMeMessage(
+			await bot.sendMeMessage(
 				logger.getText("error", error instanceof Error ? error.message : error),
 				[IMAGES.error],
 			);

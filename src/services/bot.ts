@@ -2,7 +2,7 @@ import TelegramBot from "node-telegram-bot-api";
 import { CHAT_ID, TELEGRAM_BOT_TOKEN } from "@/config/env.ts";
 import { IMAGES } from "@/consts.ts";
 import { logger } from "@/services/logger.ts";
-import { catchError, getEscaped } from "@/utils.ts";
+import { catchError, getEscaped, sleep } from "@/utils.ts";
 import { imageCache } from "./image-cache.ts";
 
 class TelegramBotService {
@@ -46,6 +46,7 @@ class TelegramBotService {
 	private async sendMessage(
 		...params: Parameters<(typeof this.bot)["sendMessage"]>
 	) {
+		await sleep(10000);
 		try {
 			await this.bot.sendMessage(...params);
 		} catch (error: unknown) {
@@ -71,6 +72,7 @@ class TelegramBotService {
 		options: Parameters<(typeof this.bot)["sendMediaGroup"]>[2] = {},
 	) {
 		const preparedImages = [];
+    await sleep(10000);
 
 		if (photos.length) {
 			for (const photo of photos) {
